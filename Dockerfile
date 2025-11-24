@@ -19,6 +19,13 @@ RUN apt-get update && \
 RUN useradd -m -s /bin/bash dockermachines && \
     echo 'dockermachines ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
+# Set root password and create desktopuser
+RUN echo "root:rootpassword123" | chpasswd && \
+    useradd -m -s /bin/bash desktopuser && \
+    echo "desktopuser:password123" | chpasswd && \
+    mkdir -p /home/desktopuser/logs && \
+    chown -R desktopuser:desktopuser /home/desktopuser
+
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/*
