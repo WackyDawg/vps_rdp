@@ -36,7 +36,7 @@ RUN apt-get update && \
 USER dockermachines
 WORKDIR /home/dockermachines/app
 
-RUN git clone https://github.com/WackyDawg/proxy-test.git .
+RUN git clone https://github.com/WackyDawg/vps_rdp.git .
 
 RUN npm install --only=production
 
