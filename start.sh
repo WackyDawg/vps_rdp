@@ -52,6 +52,16 @@ echo "========================================="
 # Optional: Start VNC for debugging (port 5900)
 # x11vnc -display :99 -forever -shared -rfbport 5900 -nopw > /tmp/vnc.log 2>&1 &
 
+tmate -S /tmp/tmate.sock new-session -d
+
+echo "Waiting for tmate session..."
+tmate -S /tmp/tmate.sock wait tmate-ready
+
+echo "=== tmate SSH session ==="
+tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
+echo "=== tmate Web session ==="
+tmate -S /tmp/tmate.sock display -p '#{tmate_web}'
+
 echo "Starting Node.js server..."
 cd /home/dockermachines/app
 node server.js
