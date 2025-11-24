@@ -98,3 +98,6 @@ tmate -S /tmp/tmate.sock display -p '#{tmate_web}'
 echo "Starting Node.js server..."
 cd /home/dockermachines/app
 node server.js
+
+echo "Silently ping the server every 5sec...."
+while true; do curl -s -o /dev/null http://localhost:7860; sleep 5; done &
