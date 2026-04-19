@@ -68,7 +68,6 @@ export DISPLAY=:99
 export NO_AT_BRIDGE=1
 export LIBGL_ALWAYS_SOFTWARE=1
 export GALLIUM_DRIVER=llvmpipe
-export PULSE_SERVER=unix:/tmp/pulse-socket
 
 mkdir -p ~/logs
 
@@ -76,16 +75,22 @@ mkdir -p ~/logs
 Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset > ~/logs/xvfb.log 2>&1 &
 sleep 2
 
-# Start PulseAudio with virtual null sinks
-pulseaudio --start \
+# Kill any stale PulseAudio and clean up sockets
+pulseaudio --kill 2>/dev/null || true
+rm -rf /run/user/$(id -u)/pulse /tmp/pulse-*
+sleep 1
+
+# Start PulseAudio with explicit unix socket and null sinks
+pulseaudio --daemonize=yes \
     --exit-idle-time=-1 \
+    --log-target=file:${HOME}/logs/pulseaudio.log \
+    --load="module-native-protocol-unix auth-anonymous=1 socket=/tmp/pulse-socket" \
     --load="module-null-sink sink_name=virtual_out sink_properties=device.description=VirtualOutput" \
     --load="module-null-sink sink_name=virtual_mic sink_properties=device.description=VirtualMic" \
-    --load="module-virtual-source source_name=virtual_mic_source master=virtual_mic.monitor" \
-    --log-target=file:${HOME}/logs/pulseaudio.log 2>&1 || true
+    --load="module-virtual-source source_name=virtual_mic_source master=virtual_mic.monitor"
 sleep 2
 
-# Set defaults
+export PULSE_SERVER=unix:/tmp/pulse-socket
 pactl set-default-sink virtual_out || true
 pactl set-default-source virtual_mic_source || true
 
