@@ -15,6 +15,9 @@ dpkg -i rustdesk-1.3.2-x86_64.deb || apt-get install -f -y
 dpkg -i rustdesk-1.3.2-x86_64.deb
 rm rustdesk-1.3.2-x86_64.deb
 
+echo "Installing AdsPower dependencies..."
+apt-get install -y libsecret-1-0 libsecret-common
+
 echo "Installing Antidetect Browser...."
 wget -q https://version.adspower.net/software/linux-x64-global/7.7.18/AdsPower-Global-7.7.18-x64.deb
 dpkg -i AdsPower-Global-7.7.18-x64.deb || apt-get install -f -y
