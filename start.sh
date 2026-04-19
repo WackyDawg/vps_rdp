@@ -23,15 +23,16 @@ rm AdsPower-Global-7.7.18-x64.deb
 
 echo "Installing graphics dependencies..."
 apt-get install -y \
-    libgl1-mesa-glx \
-    libgl1-mesa-dri \
-    libegl1-mesa \
+    libgl1 \
+    libgles2 \
+    libegl1 \
     libgbm1 \
     libxcb-xfixes0 \
     libxcb-shape0 \
     libxkbcommon0 \
     at-spi2-core \
-    mesa-utils
+    mesa-utils \
+    mesa-vulkan-drivers
 
 echo "Installing audio dependencies..."
 apt-get install -y \
