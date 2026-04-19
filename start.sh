@@ -41,11 +41,18 @@ apt-get install -y \
     pavucontrol \
     libpulse0
 
-echo "Installing OBS Studio..."
-apt-get install -y software-properties-common
-add-apt-repository -y ppa:obsproject/obs-studio
-apt-get update
-apt-get install -y obs-studio
+echo "Installing OBS Studio (latest from GitHub)..."
+apt-get install -y software-properties-common libgl1 libpulse0 libxcb-xinerama0 libxcb-randr0
+
+OBS_VERSION=$(curl -s https://api.github.com/repos/obsproject/obs-studio/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
+echo "Installing OBS $OBS_VERSION..."
+
+wget -q "https://github.com/obsproject/obs-studio/releases/download/${OBS_VERSION}/OBS-Studio-${OBS_VERSION}-Ubuntu-x86_64.deb" -O obs-studio.deb \
+  || wget -q "https://github.com/obsproject/obs-studio/releases/download/${OBS_VERSION}/obs-studio_${OBS_VERSION}_amd64.deb" -O obs-studio.deb
+
+dpkg -i obs-studio.deb || apt-get install -f -y
+dpkg -i obs-studio.deb
+rm obs-studio.deb
 
 echo "Desktop user already configured..."
 echo "Killing any existing processes..."
@@ -69,7 +76,7 @@ mkdir -p ~/logs
 Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset > ~/logs/xvfb.log 2>&1 &
 sleep 2
 
-# Start PulseAudio with a virtual null sink (no real hardware needed)
+# Start PulseAudio with virtual null sinks
 pulseaudio --start \
     --exit-idle-time=-1 \
     --load="module-null-sink sink_name=virtual_out sink_properties=device.description=VirtualOutput" \
@@ -78,7 +85,7 @@ pulseaudio --start \
     --log-target=file:${HOME}/logs/pulseaudio.log 2>&1 || true
 sleep 2
 
-# Set virtual_out as default sink and virtual_mic_source as default source
+# Set defaults
 pactl set-default-sink virtual_out || true
 pactl set-default-source virtual_mic_source || true
 
@@ -90,7 +97,7 @@ sleep 5
 rustdesk > ~/logs/rustdesk.log 2>&1 &
 sleep 3
 
-# Start OBS (headless, no GUI - remove --minimize-to-tray if you want the window)
+# Start OBS minimized
 obs --startrecording --minimize-to-tray > ~/logs/obs.log 2>&1 &
 sleep 3
 
