@@ -41,32 +41,12 @@ apt-get install -y \
     pavucontrol \
     libpulse0
 
-echo "Installing OBS Studio 32.1.1 (latest)..."
+echo "Installing OBS Studio 32.1.1..."
 apt-get install -y software-properties-common libgl1 libpulse0 libxcb-xinerama0 libxcb-randr0
-
-# Check what assets are available for 32.1.1
-echo "Fetching available OBS 32.1.1 assets..."
-ASSET_URL=$(curl -s https://api.github.com/repos/obsproject/obs-studio/releases/latest \
-    | grep '"browser_download_url"' \
-    | grep -i "ubuntu\|x86_64\|amd64" \
-    | grep "\.deb" \
-    | head -1 \
-    | cut -d'"' -f4)
-
-echo "Downloading OBS from: $ASSET_URL"
-
-if [ -n "$ASSET_URL" ]; then
-    wget -q "$ASSET_URL" -O obs-studio.deb
-else
-    # Fallback: try known naming patterns for 32.1.1
-    wget -q "https://github.com/obsproject/obs-studio/releases/download/32.1.1/OBS-Studio-32.1.1-Ubuntu-x86_64.deb" -O obs-studio.deb \
-    || wget -q "https://github.com/obsproject/obs-studio/releases/download/32.1.1/obs-studio_32.1.1_amd64.deb" -O obs-studio.deb
-fi
-
+wget "https://github.com/obsproject/obs-studio/releases/download/32.1.1/OBS-Studio-32.1.1-Ubuntu-24.04-x86_64.deb" -O obs-studio.deb
 dpkg -i obs-studio.deb || apt-get install -f -y
 dpkg -i obs-studio.deb
 rm obs-studio.deb
-
 echo "OBS version installed:"
 obs --version
 
