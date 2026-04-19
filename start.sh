@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-
 echo "Updating and upgrading packages..."
 sudo apt-get update
 
@@ -22,7 +21,6 @@ dpkg -i AdsPower-Global-7.7.18-x64.deb || apt-get install -f -y
 dpkg -i AdsPower-Global-7.7.18-x64.deb
 rm AdsPower-Global-7.7.18-x64.deb
 
-
 echo "Installing graphics dependencies..."
 apt-get install -y \
     libgl1-mesa-glx \
@@ -35,12 +33,26 @@ apt-get install -y \
     at-spi2-core \
     mesa-utils
 
-echo "Desktop user already configured..."
+echo "Installing audio dependencies..."
+apt-get install -y \
+    pulseaudio \
+    pulseaudio-utils \
+    alsa-utils \
+    pavucontrol \
+    libpulse0
 
+echo "Installing OBS Studio..."
+apt-get install -y software-properties-common
+add-apt-repository -y ppa:obsproject/obs-studio
+apt-get update
+apt-get install -y obs-studio
+
+echo "Desktop user already configured..."
 echo "Killing any existing processes..."
 pkill -9 rustdesk || true
 pkill -9 Xvfb || true
 pkill -9 xfce4 || true
+pkill -9 pulseaudio || true
 sleep 2
 
 echo "Starting virtual display and desktop..."
@@ -49,47 +61,64 @@ export DISPLAY=:99
 export NO_AT_BRIDGE=1
 export LIBGL_ALWAYS_SOFTWARE=1
 export GALLIUM_DRIVER=llvmpipe
+export PULSE_SERVER=unix:/tmp/pulse-socket
+
 mkdir -p ~/logs
 
-# Start Xvfb with full HD resolution for better RustDesk experience
+# Start Xvfb with full HD resolution
 Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset > ~/logs/xvfb.log 2>&1 &
 sleep 2
+
+# Start PulseAudio with a virtual null sink (no real hardware needed)
+pulseaudio --start \
+    --exit-idle-time=-1 \
+    --load="module-null-sink sink_name=virtual_out sink_properties=device.description=VirtualOutput" \
+    --load="module-null-sink sink_name=virtual_mic sink_properties=device.description=VirtualMic" \
+    --load="module-virtual-source source_name=virtual_mic_source master=virtual_mic.monitor" \
+    --log-target=file:${HOME}/logs/pulseaudio.log 2>&1 || true
+sleep 2
+
+# Set virtual_out as default sink and virtual_mic_source as default source
+pactl set-default-sink virtual_out || true
+pactl set-default-source virtual_mic_source || true
 
 # Start XFCE
 startxfce4 > ~/logs/xfce.log 2>&1 &
 sleep 5
 
-# Start RustDesk with error logging
+# Start RustDesk
 rustdesk > ~/logs/rustdesk.log 2>&1 &
 sleep 3
 
-# Check if RustDesk is running
-ps aux | grep rustdesk | grep -v grep
+# Start OBS (headless, no GUI - remove --minimize-to-tray if you want the window)
+obs --startrecording --minimize-to-tray > ~/logs/obs.log 2>&1 &
+sleep 3
+
+# Check processes
+ps aux | grep -E "rustdesk|obs|pulseaudio" | grep -v grep
 EOF
 
 echo "Configuring RustDesk..."
-# Set password as root
 rustdesk --password WackydawgTheBotFather
 
-# Get and display the ID
 echo "========================================="
 echo "RustDesk ID:"
 su - desktopuser -c "rustdesk --get-id" || rustdesk --get-id
 echo "RustDesk Password: WackydawgTheBotFather"
 echo "========================================="
 
-# Check RustDesk status
 echo "RustDesk Status:"
 su - desktopuser -c "tail -20 ~/logs/rustdesk.log"
 
-# Optional: Start VNC for debugging (port 5900)
-# x11vnc -display :99 -forever -shared -rfbport 5900 -nopw > /tmp/vnc.log 2>&1 &
+echo "OBS Status:"
+su - desktopuser -c "tail -10 ~/logs/obs.log" || true
+
+echo "Audio Status:"
+su - desktopuser -c "PULSE_SERVER=unix:/tmp/pulse-socket pactl list sinks short" || true
 
 tmate -S /tmp/tmate.sock new-session -d
-
 echo "Waiting for tmate session..."
 tmate -S /tmp/tmate.sock wait tmate-ready
-
 echo "=== tmate SSH session ==="
 tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
 echo "=== tmate Web session ==="
