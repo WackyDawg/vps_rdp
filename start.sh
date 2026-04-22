@@ -24,6 +24,13 @@ dpkg -i AdsPower-Global-7.7.18-x64.deb || apt-get install -f -y
 dpkg -i AdsPower-Global-7.7.18-x64.deb
 rm AdsPower-Global-7.7.18-x64.deb
 
+echo "Installing Tor Browser..."
+wget -q https://www.torproject.org/dist/torbrowser/15.0.10/tor-browser-linux-x86_64-15.0.10.tar.xz
+tar -xf tor-browser-linux-x86_64-15.0.10.tar.xz
+mv tor-browser /opt/tor-browser
+ln -sf /opt/tor-browser/start-tor-browser.desktop /usr/local/bin/tor-browser
+rm tor-browser-linux-x86_64-15.0.10.tar.xz
+
 echo "Installing graphics dependencies..."
 apt-get install -y \
     libgl1 \
