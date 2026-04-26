@@ -9,6 +9,20 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get('/tunnel', (req, res) => {
+  try {
+    const url = execSync("grep -o 'https://.*\\.trycloudflare\\.com' /tmp/cloudflared.log | head -1").toString().trim();
+    res.json({ 
+      tunnel_url: url,
+      ssh_user: 'root',
+      ssh_password: 'rootpassword123',
+      vscode_host: url.replace('https://', '')
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'Tunnel not ready yet', detail: e.message });
+  }
+});
+
 app.get("/", (req, res) => {
   const now = new Date();
 
