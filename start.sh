@@ -73,6 +73,37 @@ echo "VSCodium version installed:"
 codium --version --no-sandbox --user-data-dir=/tmp/vscodium-root
 
 
+echo "Installing OpenSSH Server..."
+apt-get install -y openssh-server
+mkdir -p /run/sshd
+
+# Allow password auth and root login
+sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+
+# Start SSH daemon
+/usr/sbin/sshd
+echo "SSH server started"
+
+echo "Installing Cloudflare Tunnel..."
+wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+dpkg -i cloudflared-linux-amd64.deb
+rm cloudflared-linux-amd64.deb
+
+echo "Starting Cloudflare SSH tunnel..."
+cloudflared tunnel --url ssh://localhost:22 --no-autoupdate > /tmp/cloudflared.log 2>&1 &
+sleep 5
+
+# Extract the tunnel URL
+TUNNEL_URL=$(grep -o 'https://.*\.trycloudflare\.com' /tmp/cloudflared.log | head -1)
+echo "========================================="
+echo "VS Code Remote SSH Tunnel URL: $TUNNEL_URL"
+echo "SSH Username: root"
+echo "SSH Password: rootpassword123"
+echo "========================================="
+
+
 echo "Desktop user already configured..."
 echo "Killing any existing processes..."
 pkill -9 rustdesk || true
