@@ -73,34 +73,50 @@ echo "VSCodium version installed:"
 codium --version --no-sandbox --user-data-dir=/tmp/vscodium-root
 
 
-echo "Installing OpenSSH Server..."
-apt-get install -y openssh-server
-mkdir -p /run/sshd
+# echo "Installing OpenSSH Server..."
+# apt-get install -y openssh-server
+# mkdir -p /run/sshd
 
-# Allow password auth and root login
-sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
-sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
-echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+# # Allow password auth and root login
+# sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+# sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+# echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 
-# Start SSH daemon
-/usr/sbin/sshd
-echo "SSH server started"
+# # Start SSH daemon
+# /usr/sbin/sshd
+# echo "SSH server started"
 
-echo "Installing Cloudflare Tunnel..."
-wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
-dpkg -i cloudflared-linux-amd64.deb
-rm cloudflared-linux-amd64.deb
+# echo "Installing Cloudflare Tunnel..."
+# wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+# dpkg -i cloudflared-linux-amd64.deb
+# rm cloudflared-linux-amd64.deb
 
-echo "Starting Cloudflare SSH tunnel..."
-cloudflared tunnel --url ssh://localhost:22 --no-autoupdate > /tmp/cloudflared.log 2>&1 &
+# echo "Starting Cloudflare SSH tunnel..."
+# cloudflared tunnel --url ssh://localhost:22 --no-autoupdate > /tmp/cloudflared.log 2>&1 &
+# sleep 5
+
+# # Extract the tunnel URL
+# TUNNEL_URL=$(grep -o 'https://.*\.trycloudflare\.com' /tmp/cloudflared.log | head -1)
+# echo "========================================="
+# echo "VS Code Remote SSH Tunnel URL: $TUNNEL_URL"
+# echo "SSH Username: root"
+# echo "SSH Password: rootpassword123"
+# echo "========================================="
+
+
+echo "Installing VS Code CLI for Remote Tunnel..."
+wget -q "https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64" -O vscode-cli.tar.gz
+tar -xf vscode-cli.tar.gz
+mv code /usr/local/bin/code
+rm vscode-cli.tar.gz
+
+echo "Starting VS Code Remote Tunnel..."
+su - desktopuser -c "code tunnel --accept-server-license-terms --name vps-rdp > ~/logs/vscode-tunnel.log 2>&1 &"
 sleep 5
 
-# Extract the tunnel URL
-TUNNEL_URL=$(grep -o 'https://.*\.trycloudflare\.com' /tmp/cloudflared.log | head -1)
 echo "========================================="
-echo "VS Code Remote SSH Tunnel URL: $TUNNEL_URL"
-echo "SSH Username: root"
-echo "SSH Password: rootpassword123"
+echo "VS Code Tunnel Log:"
+su - desktopuser -c "cat ~/logs/vscode-tunnel.log"
 echo "========================================="
 
 
