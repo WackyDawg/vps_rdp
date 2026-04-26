@@ -70,7 +70,8 @@ echo 'deb [ signed-by=/usr/share/keyrings/vscodium-archive-keyring.gpg ] https:/
 apt-get update
 apt-get install -y codium
 echo "VSCodium version installed:"
-codium --version
+codium --version --no-sandbox --user-data-dir=/tmp/vscodium-root
+
 
 echo "Desktop user already configured..."
 echo "Killing any existing processes..."
