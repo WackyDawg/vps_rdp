@@ -3,10 +3,28 @@ set -e
 echo "Updating and upgrading packages..."
 sudo apt-get update
 
+echo "Installing Chrome dependencies..."
+apt-get install -y \
+    fonts-liberation \
+    libasound2 \
+    libnspr4 \
+    libnss3 \
+    xdg-utils \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libgbm1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libxss1 \
+    libxtst6
+
 echo "Installing Chrome..."
 wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 dpkg -i google-chrome-stable_current_amd64.deb || apt-get install -f -y
-dpkg -i google-chrome-stable_current_amd64.deb
 rm google-chrome-stable_current_amd64.deb
 
 echo "Installing RustDesk..."
