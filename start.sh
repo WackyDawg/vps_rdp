@@ -62,15 +62,15 @@ apt-get install -y \
     mesa-utils \
     mesa-vulkan-drivers
 
-echo "Installing audio dependencies..."
-apt-get install -y \
-    pulseaudio \
-    pulseaudio-utils \
-    alsa-utils \
-    pavucontrol \
-    libpulse0 \
-    --no-install-recommends \
-    -o Dpkg::Options::="--force-confold"
+# echo "Installing audio dependencies..."
+# apt-get install -y \
+#     pulseaudio \
+#     pulseaudio-utils \
+#     alsa-utils \
+#     pavucontrol \
+#     libpulse0 \
+#     --no-install-recommends \
+#     -o Dpkg::Options::="--force-confold"
 
 echo "Installing OBS Studio 32.1.1..."
 apt-get install -y software-properties-common libgl1 libpulse0 libxcb-xinerama0 libxcb-randr0
@@ -211,24 +211,24 @@ mkdir -p ~/logs
 Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset > ~/logs/xvfb.log 2>&1 &
 sleep 2
 
-# Kill any stale PulseAudio and clean up sockets
-pulseaudio --kill 2>/dev/null || true
-rm -rf /run/user/$(id -u)/pulse /tmp/pulse-*
-sleep 1
+# # Kill any stale PulseAudio and clean up sockets
+# pulseaudio --kill 2>/dev/null || true
+# rm -rf /run/user/$(id -u)/pulse /tmp/pulse-*
+# sleep 1
 
-# Start PulseAudio with explicit unix socket and null sinks
-pulseaudio --daemonize=yes \
-    --exit-idle-time=-1 \
-    --log-target=file:${HOME}/logs/pulseaudio.log \
-    --load="module-native-protocol-unix auth-anonymous=1 socket=/tmp/pulse-socket" \
-    --load="module-null-sink sink_name=virtual_out sink_properties=device.description=VirtualOutput" \
-    --load="module-null-sink sink_name=virtual_mic sink_properties=device.description=VirtualMic" \
-    --load="module-virtual-source source_name=virtual_mic_source master=virtual_mic.monitor"
-sleep 2
+# # Start PulseAudio with explicit unix socket and null sinks
+# pulseaudio --daemonize=yes \
+#     --exit-idle-time=-1 \
+#     --log-target=file:${HOME}/logs/pulseaudio.log \
+#     --load="module-native-protocol-unix auth-anonymous=1 socket=/tmp/pulse-socket" \
+#     --load="module-null-sink sink_name=virtual_out sink_properties=device.description=VirtualOutput" \
+#     --load="module-null-sink sink_name=virtual_mic sink_properties=device.description=VirtualMic" \
+#     --load="module-virtual-source source_name=virtual_mic_source master=virtual_mic.monitor"
+# sleep 2
 
-export PULSE_SERVER=unix:/tmp/pulse-socket
-pactl set-default-sink virtual_out || true
-pactl set-default-source virtual_mic_source || true
+# export PULSE_SERVER=unix:/tmp/pulse-socket
+# pactl set-default-sink virtual_out || true
+# pactl set-default-source virtual_mic_source || true
 
 # Start XFCE
 startxfce4 > ~/logs/xfce.log 2>&1 &
