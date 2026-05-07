@@ -22,10 +22,10 @@ apt-get install -y \
     libxss1 \
     libxtst6
 
-echo "Installing Chrome..."
-wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-dpkg -i google-chrome-stable_current_amd64.deb || apt-get install -f -y
-rm google-chrome-stable_current_amd64.deb
+# echo "Installing Chrome..."
+# wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+# dpkg -i google-chrome-stable_current_amd64.deb || apt-get install -f -y
+# rm google-chrome-stable_current_amd64.deb
 
 echo "Installing RustDesk..."
 wget -q https://github.com/rustdesk/rustdesk/releases/download/1.3.2/rustdesk-1.3.2-x86_64.deb
