@@ -103,6 +103,56 @@ codium --version --no-sandbox --user-data-dir=/tmp/vscodium-root
 # echo "SSH Password: rootpassword123"
 # echo "========================================="
 
+echo "Installing Android Studio..."
+# Install Java (required for Android Studio)
+apt-get install -y openjdk-17-jdk
+
+# Install Android Studio dependencies
+apt-get install -y \
+    libc6:i386 \
+    libncurses5:i386 \
+    libstdc++6:i386 \
+    lib32z1 \
+    libbz2-1.0:i386 \
+    libgl1 \
+    libxrender1 \
+    libxtst6 \
+    libxi6 \
+    fontconfig
+
+# Enable i386 architecture for 32-bit libs
+dpkg --add-architecture i386
+apt-get update
+
+# Download and install Android Studio
+wget -q "https://redirector.gvt1.com/edgedl/android/studio/ide-zips/2024.3.2.14/android-studio-2024.3.2.14-linux.tar.gz" -O android-studio.tar.gz
+tar -xzf android-studio.tar.gz -C /opt/
+rm android-studio.tar.gz
+
+# Create symlink for easy launch
+ln -sf /opt/android-studio/bin/studio.sh /usr/local/bin/android-studio
+
+# Set JAVA_HOME
+echo 'export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64' >> /etc/environment
+echo 'export PATH=$PATH:/opt/android-studio/bin' >> /etc/environment
+
+# Create desktop entry
+cat > /usr/share/applications/android-studio.desktop << 'DESKTOP'
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Android Studio
+Comment=Android IDE
+Exec=/opt/android-studio/bin/studio.sh
+Icon=/opt/android-studio/bin/studio.png
+Terminal=false
+Categories=Development;IDE;
+StartupWMClass=jetbrains-studio
+DESKTOP
+
+echo "Android Studio installed:"
+/opt/android-studio/bin/studio.sh --version 2>/dev/null || echo "Android Studio ready at /opt/android-studio/bin/studio.sh"
+
 
 echo "Installing VS Code CLI for Remote Tunnel..."
 wget -q "https://code.visualstudio.com/sha/download?build=stable&os=cli-alpine-x64" -O vscode-cli.tar.gz
@@ -171,6 +221,11 @@ sleep 3
 # Start OBS minimized
 obs --startrecording --minimize-to-tray > ~/logs/obs.log 2>&1 &
 sleep 3
+
+# Start Android Studio
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+android-studio > ~/logs/android-studio.log 2>&1 &
+sleep 5
 
 # Check processes
 ps aux | grep -E "rustdesk|obs|pulseaudio" | grep -v grep
