@@ -68,7 +68,9 @@ apt-get install -y \
     pulseaudio-utils \
     alsa-utils \
     pavucontrol \
-    libpulse0
+    libpulse0 \
+    --no-install-recommends \
+    -o Dpkg::Options::="--force-confold"
 
 echo "Installing OBS Studio 32.1.1..."
 apt-get install -y software-properties-common libgl1 libpulse0 libxcb-xinerama0 libxcb-randr0
